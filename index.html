@@ -3,139 +3,198 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thế Giới AI - Tổng Hợp Công Cụ</title>
+    <title>Thế Giới AI - Cổng Thông Tin Tương Lai</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* CSS được nâng cấp để phù hợp với layout mới */
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            line-height: 1.6;
-            background-color: #f0f2f5; /* Một màu nền dịu mắt hơn */
-            color: #333;
+        /* CSS được viết lại hoàn toàn cho giao diện mới */
+        :root {
+            --dark-bg: #0d1117; /* Màu nền tối như GitHub */
+            --primary-blue: #58a6ff; /* Màu xanh dương nổi bật */
+            --border-color: #30363d;
+            --card-bg: #161b22;
+            --text-primary: #c9d1d9;
+            --text-secondary: #8b949e;
+        }
+
+        * {
+            box-sizing: border-box;
             margin: 0;
-            padding: 20px;
+            padding: 0;
         }
-        .header {
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.7;
+            background-color: var(--dark-bg);
+            color: var(--text-primary);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Phần Hero Header */
+        .hero {
             text-align: center;
-            margin-bottom: 40px;
+            padding: 100px 0;
         }
-        .header h1 {
-            color: #1a73e8; /* Màu xanh của công nghệ */
-            font-size: 2.8em;
+
+        .hero h1 {
+            font-size: 3.5rem;
             font-weight: 700;
-        }
-        .header p {
-            font-size: 1.2em;
-            color: #5f6368;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        .tools-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Layout lưới tự động co giãn */
-            gap: 25px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .tool-card {
-            background-color: #fff;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-            padding: 25px;
-            text-align: left;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .tool-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
-        }
-        .tool-card h2 {
-            font-size: 1.5em;
-            color: #1a73e8;
-            margin-top: 0;
-        }
-        .tool-card p {
-            font-size: 1em;
+            color: var(--primary-blue);
+            text-shadow: 0 0 15px rgba(88, 166, 255, 0.4);
             margin-bottom: 20px;
         }
-        .tool-card a {
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 30px auto;
+        }
+
+        .cta-button {
             display: inline-block;
-            background-color: #1a73e8;
-            color: #fff;
+            background-color: var(--primary-blue);
+            color: var(--dark-bg);
+            padding: 15px 35px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(88, 166, 255, 0.2);
+        }
+
+        /* Phần Lưới công cụ */
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+            padding-bottom: 50px;
+        }
+
+        .tool-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            transition: border-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-blue);
+        }
+
+        .tool-card h2 {
+            font-size: 1.75rem;
+            color: var(--text-primary);
+            margin-bottom: 15px;
+        }
+
+        .tool-card p {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            flex-grow: 1; /* Đẩy nút bấm xuống dưới */
+            margin-bottom: 25px;
+        }
+
+        .tool-card a {
+            align-self: flex-start; /* Nút chỉ rộng bằng nội dung */
+            background-color: transparent;
+            color: var(--primary-blue);
             padding: 10px 20px;
             border-radius: 8px;
             text-decoration: none;
             font-weight: 600;
-            transition: background-color 0.2s ease;
+            border: 1px solid var(--border-color);
+            transition: background-color 0.2s ease, color 0.2s ease;
         }
+
         .tool-card a:hover {
-            background-color: #1558b8;
+            background-color: var(--primary-blue);
+            color: var(--dark-bg);
         }
+
+        /* Chân trang */
         .footer {
             text-align: center;
-            margin-top: 50px;
-            font-size: 0.9em;
-            color: #777;
+            padding: 40px 0;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary);
         }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <!-- Tiêu đề chính của trang -->
-        <h1>Thế Giới AI</h1>
-        <p>Khám phá những công cụ Trí Tuệ Nhân Tạo mạnh mẽ và hữu ích nhất, được tổng hợp tại một nơi duy nhất.</p>
-    </div>
+    <div class="container">
+        <header class="hero">
+            <h1>Thế Giới AI</h1>
+            <p>Bộ sưu tập các công cụ AI hàng đầu, giúp bạn sáng tạo và làm việc hiệu quả hơn trong kỷ nguyên số.</p>
+            <a href="#tools-grid" class="cta-button">Khám Phá Ngay</a>
+        </header>
 
-    <!-- Lưới chứa các công cụ AI -->
-    <div class="tools-grid">
+        <main>
+            <div id="tools-grid" class="tools-grid">
+                <!-- Thẻ Công cụ 1: Viết lách -->
+                <div class="tool-card">
+                    <h2>Viết Nội Dung</h2>
+                    <p>Tạo ra các bài viết, email, kịch bản, và nhiều hơn nữa chỉ từ một vài ý tưởng ban đầu. Trợ lý viết lách không thể thiếu.</p>
+                    <a href="#" target="_blank">Thử ngay</a>
+                </div>
 
-        <!-- Thẻ Công cụ 1: Viết lách -->
-        <div class="tool-card">
-            <h2>Viết Nội Dung</h2>
-            <p>Tạo ra các bài viết, email, kịch bản, và nhiều hơn nữa chỉ từ một vài ý tưởng ban đầu. Trợ lý viết lách không thể thiếu.</p>
-            <a href="#" target="_blank">Thử ngay</a>
-        </div>
+                <!-- Thẻ Công cụ 2: Tạo Hình ảnh -->
+                <div class="tool-card">
+                    <h2>Tạo Hình Ảnh</h2>
+                    <p>Biến những dòng mô tả của bạn thành các tác phẩm nghệ thuật, ảnh chụp, và hình minh họa độc đáo bằng sức mạnh của AI.</p>
+                    <a href="#" target="_blank">Khám phá</a>
+                </div>
 
-        <!-- Thẻ Công cụ 2: Tạo Hình ảnh -->
-        <div class="tool-card">
-            <h2>Tạo Hình Ảnh</h2>
-            <p>Biến những dòng mô tả của bạn thành các tác phẩm nghệ thuật, ảnh chụp, và hình minh họa độc đáo bằng sức mạnh của AI.</p>
-            <a href="#" target="_blank">Khám phá</a>
-        </div>
+                <!-- Thẻ Công cụ 3: Viết Mã -->
+                <div class="tool-card">
+                    <h2>Viết Mã Lập Trình</h2>
+                    <p>Hỗ trợ lập trình viên viết code nhanh hơn, tìm lỗi và học các ngôn ngữ lập trình mới một cách hiệu quả.</p>
+                    <a href="#" target="_blank">Xem công cụ</a>
+                </div>
 
-        <!-- Thẻ Công cụ 3: Viết Mã -->
-        <div class="tool-card">
-            <h2>Viết Mã Lập Trình</h2>
-            <p>Hỗ trợ lập trình viên viết code nhanh hơn, tìm lỗi và học các ngôn ngữ lập trình mới một cách hiệu quả.</p>
-            <a href="#" target="_blank">Xem công cụ</a>
-        </div>
+                <!-- Thẻ Công cụ 4: Dịch Thuật -->
+                <div class="tool-card">
+                    <h2>Dịch Thuật</h2>
+                    <p>Phá vỡ rào cản ngôn ngữ với khả năng dịch văn bản, giọng nói và hình ảnh một cách chính xác và tự nhiên.</p>
+                    <a href="#" target="_blank">Bắt đầu dịch</a>
+                </div>
+                
+                <!-- Thẻ Công cụ 5: Tổng hợp Giọng nói -->
+                <div class="tool-card">
+                    <h2>Tổng Hợp Giọng Nói</h2>
+                    <p>Chuyển đổi văn bản thành giọng nói với nhiều ngôn ngữ và ngữ điệu khác nhau, cực kỳ hữu ích cho video hoặc podcast.</p>
+                    <a href="#" target="_blank">Nghe thử</a>
+                </div>
 
-        <!-- Thẻ Công cụ 4: Dịch Thuật -->
-        <div class="tool-card">
-            <h2>Dịch Thuật</h2>
-            <p>Phá vỡ rào cản ngôn ngữ với khả năng dịch văn bản, giọng nói và hình ảnh một cách chính xác và tự nhiên.</p>
-            <a href="#" target="_blank">Bắt đầu dịch</a>
-        </div>
-        
-        <!-- Thẻ Công cụ 5: Tổng hợp Giọng nói -->
-        <div class="tool-card">
-            <h2>Tổng Hợp Giọng Nói</h2>
-            <p>Chuyển đổi văn bản thành giọng nói với nhiều ngôn ngữ và ngữ điệu khác nhau, cực kỳ hữu ích cho video hoặc podcast.</p>
-            <a href="#" target="_blank">Nghe thử</a>
-        </div>
+                <!-- Thẻ Công cụ 6: Lên Kế hoạch -->
+                <div class="tool-card">
+                    <h2>Lên Kế Hoạch</h2>
+                    <p>Trợ lý AI giúp bạn sắp xếp lịch trình, lên kế hoạch cho chuyến đi, tóm tắt tài liệu và quản lý công việc hiệu quả.</p>
+                    <a href="#" target="_blank">Sắp xếp ngay</a>
+                </div>
+            </div>
+        </main>
 
-        <!-- Thẻ Công cụ 6: Lên Kế hoạch -->
-        <div class="tool-card">
-            <h2>Lên Kế Hoạch & Sắp Xếp</h2>
-            <p>Trợ lý AI giúp bạn sắp xếp lịch trình, lên kế hoạch cho chuyến đi, tóm tắt tài liệu và quản lý công việc hiệu quả.</p>
-            <a href="#" target="_blank">Sắp xếp ngay</a>
-        </div>
-
-    </div>
-
-    <!-- Chân trang -->
-    <div class="footer">
-        <p>Trang web được xây dựng trên nền tảng GitHub Pages.</p>
+        <footer class="footer">
+            <p>&copy; 2025 d2vn.github.io | Thiết kế bởi Trí Tuệ Nhân Tạo</p>
+        </footer>
     </div>
 
 </body>
