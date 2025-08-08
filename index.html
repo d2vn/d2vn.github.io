@@ -3,317 +3,420 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thế Giới AI - Cổng Thông Tin Tương Lai</title>
+    <title>AIO - Bộ Công Cụ AI Toàn Diện</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* CSS được viết lại hoàn toàn cho giao diện mới */
         :root {
-            --dark-bg: #0d1117; /* Màu nền tối như GitHub */
-            --primary-blue: #58a6ff; /* Màu xanh dương nổi bật */
+            --dark-bg: #0d1117;
+            --primary-blue: #58a6ff;
             --border-color: #30363d;
             --card-bg: #161b22;
             --text-primary: #c9d1d9;
             --text-secondary: #8b949e;
+            --input-bg: #010409;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            line-height: 1.7;
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
             background-color: var(--dark-bg);
             color: var(--text-primary);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
         }
 
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        /* Phần Hero Header */
-        .hero {
-            text-align: center;
-            padding: 100px 0;
-        }
-
-        .hero h1 {
-            font-size: 3.5rem;
-            font-weight: 700;
-            color: var(--primary-blue);
-            text-shadow: 0 0 15px rgba(88, 166, 255, 0.4);
-            margin-bottom: 20px;
-        }
-
-        .hero p {
-            font-size: 1.25rem;
-            color: var(--text-secondary);
-            max-width: 600px;
-            margin: 0 auto 30px auto;
-        }
-
-        .cta-button {
-            display: inline-block;
-            background-color: var(--primary-blue);
-            color: var(--dark-bg);
-            padding: 15px 35px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1.1rem;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .cta-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(88, 166, 255, 0.2);
-        }
-
-        /* Phần Lưới công cụ */
-        .tools-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 25px;
-            padding-bottom: 50px;
-        }
-
-        .tool-card {
+        /* --- Thanh điều hướng bên cạnh (Sidebar) --- */
+        .sidebar {
+            width: 240px;
             background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 30px;
+            border-right: 1px solid var(--border-color);
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            transition: border-color 0.2s ease, transform 0.2s ease;
+            flex-shrink: 0;
         }
-
-        .tool-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--primary-blue);
+        .sidebar h1 {
+            font-size: 1.5rem;
+            color: var(--primary-blue);
+            margin-bottom: 30px;
+            text-align: center;
         }
-
-        .tool-card h2 {
-            font-size: 1.75rem;
-            color: var(--text-primary);
-            margin-bottom: 15px;
-        }
-
-        .tool-card p {
-            font-size: 1rem;
+        .sidebar .nav-button {
+            background: none;
+            border: 1px solid transparent;
             color: var(--text-secondary);
-            flex-grow: 1; 
-            margin-bottom: 25px;
+            padding: 12px 15px;
+            width: 100%;
+            text-align: left;
+            font-size: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 8px;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .sidebar .nav-button:hover {
+            background-color: rgba(88, 166, 255, 0.1);
+        }
+        .sidebar .nav-button.active {
+            background-color: var(--primary-blue);
+            color: var(--dark-bg);
+            font-weight: 600;
+        }
+        .sidebar .nav-button.disabled {
+            color: #484f58;
+            cursor: not-allowed;
+        }
+        .sidebar .footer {
+            margin-top: auto;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        /* --- Khu vực nội dung chính --- */
+        .main-content {
+            flex-grow: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+        .page {
+            display: none; /* Mặc định ẩn tất cả các trang */
+        }
+        .page.active {
+            display: block; /* Chỉ hiện trang được kích hoạt */
+        }
+        .page h2 {
+            font-size: 2rem;
+            color: var(--primary-blue);
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+        .page p {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
         }
         
-        /* CSS cho các thành phần tương tác mới */
-        .prompt-area {
+        /* --- Các thành phần chung cho các công cụ --- */
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; margin-bottom: 5px; font-weight: 600; }
+        .prompt-area, .text-input {
             width: 100%;
-            background-color: #0d1117;
+            background-color: var(--input-bg);
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            padding: 10px;
+            padding: 12px;
             color: var(--text-primary);
             font-family: inherit;
             font-size: 1rem;
-            margin-bottom: 15px;
-            resize: vertical;
-            min-height: 80px;
         }
-
+        .prompt-area { resize: vertical; min-height: 100px; }
         .action-button {
-            align-self: flex-start;
             background-color: var(--primary-blue);
             color: var(--dark-bg);
-            padding: 10px 20px;
+            padding: 12px 25px;
             border-radius: 8px;
-            text-decoration: none;
             font-weight: 600;
             border: none;
             cursor: pointer;
-            transition: background-color 0.2s ease;
+            font-size: 1rem;
+            transition: background-color 0.2s;
         }
-        .action-button:hover {
-            background-color: #79b8ff;
-        }
-        .action-button:disabled {
-            background-color: var(--border-color);
-            cursor: not-allowed;
-        }
-
+        .action-button:hover { background-color: #79b8ff; }
+        .action-button:disabled { background-color: var(--border-color); cursor: not-allowed; }
         .result-box {
-            background-color: #0d1117;
+            background-color: var(--input-bg);
             border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 15px;
             margin-top: 20px;
-            white-space: pre-wrap; /* Giữ nguyên định dạng xuống dòng của kết quả */
-            font-size: 0.95rem;
-            color: var(--text-secondary);
-            min-height: 50px;
+            white-space: pre-wrap;
+            font-size: 1rem;
+            color: var(--text-primary);
+            min-height: 150px;
         }
-        
-        .tool-card a {
-            align-self: flex-start;
-            background-color: transparent;
-            color: var(--primary-blue);
-            padding: 10px 20px;
+        .image-preview {
+            max-width: 100%;
+            max-height: 300px;
             border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            border: 1px solid var(--border-color);
-            transition: background-color 0.2s ease, color 0.2s ease;
+            border: 1px dashed var(--border-color);
+            margin-top: 15px;
+            display: block;
         }
-
-        .tool-card a:hover {
-            background-color: var(--primary-blue);
-            color: var(--dark-bg);
-        }
-
-        .footer {
-            text-align: center;
-            padding: 40px 0;
-            border-top: 1px solid var(--border-color);
-            color: var(--text-secondary);
+        .placeholder-text {
+             color: var(--text-secondary);
+             padding: 20px;
+             background-color: var(--card-bg);
+             border-radius: 8px;
+             border: 1px dashed var(--border-color);
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <header class="hero">
-            <h1>Thế Giới AI</h1>
-            <p>Bộ sưu tập các công cụ AI hàng đầu, giúp bạn sáng tạo và làm việc hiệu quả hơn trong kỷ nguyên số.</p>
-            <a href="#tools-grid" class="cta-button">Khám Phá Ngay</a>
-        </header>
+    <nav class="sidebar">
+        <h1>AIO - D2VN</h1>
+        <!-- Các nút điều hướng, data-page trỏ tới id của trang tương ứng -->
+        <button class="nav-button active" data-page="page-content">Viết Nội Dung</button>
+        <button class="nav-button" data-page="page-image-analysis">Phân Tích Ảnh</button>
+        <button class="nav-button" data-page="page-image-gen">Tạo Hình Ảnh</button>
+        <button class="nav-button disabled" data-page="page-youtube">Phân Tích Video</button>
+        <button class="nav-button disabled" data-page="page-bg-remove">Xóa Nền Ảnh</button>
+        <button class="nav-button disabled" data-page="page-video-dl">Tải Video</button>
+        
+        <div class="footer">
+            <p>&copy; 2025 d2vn.github.io</p>
+        </div>
+    </nav>
 
-        <main>
-            <div id="tools-grid" class="tools-grid">
-                <!-- Thẻ Công cụ 1: Viết Nội Dung (Đã được tích hợp) -->
-                <div class="tool-card">
-                    <h2>Viết Nội Dung</h2>
-                    <p>Nhập yêu cầu của bạn vào ô bên dưới và để AI viết nội dung giúp bạn. Ví dụ: "viết một bài thơ về mùa hè".</p>
-                    <textarea id="text-prompt" class="prompt-area" placeholder="Nhập yêu cầu của bạn ở đây..."></textarea>
-                    <button id="generate-text-btn" class="action-button">Tạo Nội Dung</button>
-                    <div id="text-result" class="result-box">Kết quả sẽ hiện ở đây...</div>
-                </div>
-
-                <!-- Thẻ Công cụ 2: Tạo Hình ảnh -->
-                <div class="tool-card">
-                    <h2>Tạo Hình Ảnh</h2>
-                    <p>Biến những dòng mô tả của bạn thành các tác phẩm nghệ thuật, ảnh chụp, và hình minh họa độc đáo bằng sức mạnh của AI.</p>
-                    <a href="https://www.midjourney.com/" target="_blank">Khám phá</a>
-                </div>
-
-                <!-- Thẻ Công cụ 3: Viết Mã -->
-                <div class="tool-card">
-                    <h2>Viết Mã Lập Trình</h2>
-                    <p>Hỗ trợ lập trình viên viết code nhanh hơn, tìm lỗi và học các ngôn ngữ lập trình mới một cách hiệu quả.</p>
-                    <a href="https://github.com/features/copilot" target="_blank">Xem công cụ</a>
-                </div>
-
-                <!-- Thẻ Công cụ 4: Dịch Thuật -->
-                <div class="tool-card">
-                    <h2>Dịch Thuật</h2>
-                    <p>Phá vỡ rào cản ngôn ngữ với khả năng dịch văn bản, giọng nói và hình ảnh một cách chính xác và tự nhiên.</p>
-                    <a href="https://translate.google.com/" target="_blank">Bắt đầu dịch</a>
-                </div>
-                
-                <!-- Thẻ Công cụ 5: Tổng hợp Giọng nói -->
-                <div class="tool-card">
-                    <h2>Tổng Hợp Giọng Nói</h2>
-                    <p>Chuyển đổi văn bản thành giọng nói với nhiều ngôn ngữ và ngữ điệu khác nhau, cực kỳ hữu ích cho video hoặc podcast.</p>
-                    <a href="https://elevenlabs.io/" target="_blank">Nghe thử</a>
-                </div>
-
-                <!-- Thẻ Công cụ 6: Lên Kế hoạch -->
-                <div class="tool-card">
-                    <h2>Lên Kế Hoạch</h2>
-                    <p>Trợ lý AI giúp bạn sắp xếp lịch trình, lên kế hoạch cho chuyến đi, tóm tắt tài liệu và quản lý công việc hiệu quả.</p>
-                    <a href="https://www.notion.so/product/ai" target="_blank">Sắp xếp ngay</a>
-                </div>
+    <main class="main-content">
+        <!-- Trang 1: Viết Nội Dung (Mặc định) -->
+        <div id="page-content" class="page active">
+            <h2>Viết Nội Dung</h2>
+            <p>Nhập yêu cầu của bạn vào ô bên dưới và để AI viết nội dung giúp bạn. Ví dụ: "viết một bài thơ về mùa hè".</p>
+            <div class="input-group">
+                <label for="text-prompt">Yêu cầu của bạn</label>
+                <textarea id="text-prompt" class="prompt-area" placeholder="Viết một email chuyên nghiệp để xin nghỉ phép..."></textarea>
             </div>
-        </main>
+            <button id="generate-text-btn" class="action-button">Tạo Nội Dung</button>
+            <div id="text-result" class="result-box">Kết quả sẽ hiện ở đây...</div>
+        </div>
 
-        <footer class="footer">
-            <p>&copy; 2025 d2vn.github.io | Thiết kế bởi Trí Tuệ Nhân Tạo</p>
-        </footer>
-    </div>
+        <!-- Trang 2: Phân Tích Ảnh -->
+        <div id="page-image-analysis" class="page">
+            <h2>Phân Tích Ảnh</h2>
+            <p>Tải lên một hình ảnh và yêu cầu AI phân tích, mô tả, hoặc trích xuất văn bản từ đó.</p>
+            <div class="input-group">
+                <label for="image-upload">Chọn ảnh</label>
+                <input type="file" id="image-upload" accept="image/*" class="text-input">
+            </div>
+            <img id="image-preview-analysis" class="image-preview" src="" alt="Xem trước ảnh">
+            <div class="input-group" style="margin-top: 15px;">
+                <label for="image-prompt">Yêu cầu phân tích</label>
+                <textarea id="image-prompt" class="prompt-area" placeholder="Mô tả chi tiết hình ảnh này. Hoặc: Trích xuất toàn bộ văn bản trong ảnh."></textarea>
+            </div>
+            <button id="analyze-image-btn" class="action-button">Phân Tích</button>
+            <div id="image-result" class="result-box">Kết quả phân tích sẽ hiện ở đây...</div>
+        </div>
+
+        <!-- Trang 3: Tạo Hình Ảnh -->
+        <div id="page-image-gen" class="page">
+            <h2>Tạo Hình Ảnh</h2>
+            <p>Mô tả ý tưởng của bạn, AI sẽ biến nó thành hình ảnh. (Chức năng này sử dụng mô hình Imagen 3).</p>
+            <div class="input-group">
+                <label for="image-gen-prompt">Mô tả hình ảnh bạn muốn tạo</label>
+                <textarea id="image-gen-prompt" class="prompt-area" placeholder="Một chú mèo phi hành gia đang cưỡi tên lửa bay vào vũ trụ, phong cách hoạt hình..."></textarea>
+            </div>
+            <button id="generate-image-btn" class="action-button">Tạo Ảnh</button>
+            <div class="result-box" style="text-align: center;">
+                <img id="generated-image" class="image-preview" src="" alt="Ảnh do AI tạo ra sẽ hiện ở đây">
+                <p id="image-gen-status">Chưa có ảnh nào được tạo.</p>
+            </div>
+        </div>
+        
+        <!-- Các trang chưa thể tích hợp (hiển thị thông báo) -->
+        <div id="page-youtube" class="page">
+            <h2>Phân Tích Video</h2>
+            <div class="placeholder-text">
+                <strong>Chức năng sắp ra mắt!</strong><br>
+                Việc lấy phụ đề và phân tích video trực tiếp từ trình duyệt rất phức tạp và cần một máy chủ hỗ trợ (backend). Chúng tôi đang làm việc để sớm ra mắt tính năng này.
+            </div>
+        </div>
+
+        <div id="page-bg-remove" class="page">
+            <h2>Xóa Nền Ảnh</h2>
+             <div class="placeholder-text">
+                <strong>Chức năng sắp ra mắt!</strong><br>
+                Việc xóa nền ảnh đòi hỏi các mô hình AI chuyên dụng và sức mạnh xử lý lớn, cần có sự hỗ trợ từ máy chủ (backend).
+            </div>
+        </div>
+
+        <div id="page-video-dl" class="page">
+            <h2>Tải Video</h2>
+             <div class="placeholder-text">
+                <strong>Không thể thực hiện trên trình duyệt.</strong><br>
+                Vì lý do bảo mật và kỹ thuật, các trình duyệt web không cho phép tải trực tiếp video từ các nền tảng như YouTube. Chức năng này đòi hỏi một ứng dụng máy tính chuyên dụng.
+            </div>
+        </div>
+    </main>
     
     <script>
-        // --- Tích hợp chức năng AI Viết Nội Dung ---
+        // --- PHẦN LOGIC JAVASCRIPT ---
 
-        // Lấy các phần tử HTML cần thiết
-        const generateBtn = document.getElementById('generate-text-btn');
-        const promptInput = document.getElementById('text-prompt');
-        const resultBox = document.getElementById('text-result');
+        // Hàm chuyển đổi giữa các trang
+        document.addEventListener('DOMContentLoaded', () => {
+            const navButtons = document.querySelectorAll('.sidebar .nav-button');
+            const pages = document.querySelectorAll('.main-content .page');
 
-        // Hàm gọi API của Gemini
-        async function generateContent() {
-            // Vô hiệu hóa nút bấm và hiển thị trạng thái đang tải
-            generateBtn.disabled = true;
-            resultBox.textContent = 'AI đang suy nghĩ...';
+            navButtons.forEach(button => {
+                if (button.classList.contains('disabled')) return;
 
-            const prompt = promptInput.value;
+                button.addEventListener('click', () => {
+                    // Bỏ active ở nút cũ, thêm active cho nút mới
+                    navButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+
+                    // Ẩn trang cũ, hiện trang mới
+                    const targetPageId = button.getAttribute('data-page');
+                    pages.forEach(page => {
+                        page.classList.remove('active');
+                        if (page.id === targetPageId) {
+                            page.classList.add('active');
+                        }
+                    });
+                });
+            });
+        });
+
+        // --- Hàm gọi API chung ---
+        // Canvas sẽ tự động cung cấp key khi bạn chạy code này.
+        const API_KEY = ""; 
+
+        // --- LOGIC CHO TRANG 1: VIẾT NỘI DUNG ---
+        const generateTextBtn = document.getElementById('generate-text-btn');
+        const textPromptInput = document.getElementById('text-prompt');
+        const textResultBox = document.getElementById('text-result');
+
+        generateTextBtn.addEventListener('click', async () => {
+            const prompt = textPromptInput.value;
             if (!prompt) {
-                resultBox.textContent = 'Vui lòng nhập yêu cầu của bạn.';
-                generateBtn.disabled = false;
+                textResultBox.textContent = 'Vui lòng nhập yêu cầu của bạn.';
                 return;
             }
+            generateTextBtn.disabled = true;
+            textResultBox.textContent = 'AI đang suy nghĩ...';
 
-            // Đây là phần gọi đến API của Google AI
-            // Trong môi trường thực tế, bạn KHÔNG NÊN để lộ API Key ở đây.
-            // Canvas sẽ tự động cung cấp key khi bạn chạy code này.
-            const apiKey = ""; 
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+            const payload = { contents: [{ parts: [{ text: prompt }] }] };
 
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                if (data.candidates && data.candidates[0]) {
+                    textResultBox.textContent = data.candidates[0].content.parts[0].text;
+                } else {
+                    textResultBox.textContent = 'Xin lỗi, không thể tạo nội dung. Phản hồi từ API không hợp lệ.';
+                }
+            } catch (error) {
+                console.error("Lỗi:", error);
+                textResultBox.textContent = `Đã xảy ra lỗi: ${error.message}`;
+            } finally {
+                generateTextBtn.disabled = false;
+            }
+        });
+
+        // --- LOGIC CHO TRANG 2: PHÂN TÍCH ẢNH ---
+        const imageUpload = document.getElementById('image-upload');
+        const imagePreview = document.getElementById('image-preview-analysis');
+        const imagePromptInput = document.getElementById('image-prompt');
+        const analyzeImageBtn = document.getElementById('analyze-image-btn');
+        const imageResultBox = document.getElementById('image-result');
+        let base64ImageData = null;
+
+        imageUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                imagePreview.src = reader.result;
+                base64ImageData = reader.result.split(',')[1]; // Lấy phần dữ liệu base64
+            };
+            reader.readAsDataURL(file);
+        });
+
+        analyzeImageBtn.addEventListener('click', async () => {
+            const prompt = imagePromptInput.value;
+            if (!base64ImageData) {
+                imageResultBox.textContent = 'Vui lòng tải lên một hình ảnh.';
+                return;
+            }
+            if (!prompt) {
+                imageResultBox.textContent = 'Vui lòng nhập yêu cầu phân tích.';
+                return;
+            }
+            analyzeImageBtn.disabled = true;
+            imageResultBox.textContent = 'AI đang phân tích ảnh...';
+
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
             const payload = {
                 contents: [{
-                    parts: [{
-                        text: prompt
-                    }]
+                    parts: [
+                        { text: prompt },
+                        { inline_data: { mime_type: "image/jpeg", data: base64ImageData } }
+                    ]
                 }]
             };
 
             try {
                 const response = await fetch(apiUrl, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-
-                if (!response.ok) {
-                    throw new Error(`Lỗi mạng: ${response.status}`);
-                }
-
                 const data = await response.json();
-                
-                if (data.candidates && data.candidates.length > 0) {
-                    const text = data.candidates[0].content.parts[0].text;
-                    resultBox.textContent = text;
+                if (data.candidates && data.candidates[0]) {
+                    imageResultBox.textContent = data.candidates[0].content.parts[0].text;
                 } else {
-                    resultBox.textContent = 'Xin lỗi, không thể tạo nội dung vào lúc này. Vui lòng thử lại sau.';
+                    imageResultBox.textContent = 'Xin lỗi, không thể phân tích ảnh. Phản hồi từ API không hợp lệ.';
                 }
-
             } catch (error) {
-                console.error('Lỗi khi gọi API:', error);
-                resultBox.textContent = 'Đã xảy ra lỗi. Vui lòng kiểm tra console để biết thêm chi tiết.';
+                console.error("Lỗi:", error);
+                imageResultBox.textContent = `Đã xảy ra lỗi: ${error.message}`;
             } finally {
-                // Kích hoạt lại nút bấm sau khi hoàn tất
-                generateBtn.disabled = false;
+                analyzeImageBtn.disabled = false;
             }
-        }
+        });
+        
+        // --- LOGIC CHO TRANG 3: TẠO HÌNH ẢNH ---
+        const generateImageBtn = document.getElementById('generate-image-btn');
+        const imageGenPromptInput = document.getElementById('image-gen-prompt');
+        const generatedImage = document.getElementById('generated-image');
+        const imageGenStatus = document.getElementById('image-gen-status');
 
-        // Gắn sự kiện 'click' cho nút bấm
-        generateBtn.addEventListener('click', generateContent);
+        generateImageBtn.addEventListener('click', async () => {
+            const prompt = imageGenPromptInput.value;
+            if (!prompt) {
+                imageGenStatus.textContent = 'Vui lòng nhập mô tả cho ảnh.';
+                return;
+            }
+            generateImageBtn.disabled = true;
+            generatedImage.src = ""; // Xóa ảnh cũ
+            imageGenStatus.textContent = 'AI đang vẽ... Vui lòng chờ trong giây lát.';
+
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${API_KEY}`;
+            const payload = { instances: [{ prompt: prompt }], parameters: { "sampleCount": 1 } };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                if (data.predictions && data.predictions[0] && data.predictions[0].bytesBase64Encoded) {
+                    generatedImage.src = `data:image/png;base64,${data.predictions[0].bytesBase64Encoded}`;
+                    imageGenStatus.textContent = 'Tạo ảnh thành công!';
+                } else {
+                    imageGenStatus.textContent = 'Xin lỗi, không thể tạo ảnh. Phản hồi từ API không hợp lệ.';
+                    console.log("API Response:", data);
+                }
+            } catch (error) {
+                console.error("Lỗi:", error);
+                imageGenStatus.textContent = `Đã xảy ra lỗi: ${error.message}`;
+            } finally {
+                generateImageBtn.disabled = false;
+            }
+        });
+
     </script>
-
 </body>
 </html>
