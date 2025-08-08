@@ -14,10 +14,11 @@
             --text-primary: #f0f6fc;
             --text-secondary: #b1bac4;
             --border-color: rgba(255, 255, 255, 0.1);
-            --sidebar-bg: rgba(22, 27, 34, 0.7); /* Nền sidebar */
-            --main-bg: rgba(13, 17, 23, 0.75); /* Nền khu vực chính, tối hơn để chữ nổi bật */
-            --input-bg: rgba(0, 0, 0, 0.25); /* Nền cho các ô input, tăng độ trong */
-            --success-color: #238636;
+            --sidebar-bg: rgba(22, 27, 34, 0.85); /* Tăng độ mờ cho sidebar */
+            --main-bg: rgba(13, 17, 23, 0.8); /* Nền khu vực chính */
+            --input-bg: rgba(0, 0, 0, 0.25);
+            --success-color: #BFD641; /* Màu xanh lá cây mới */
+            --error-color: #E4080A; /* Màu đỏ mới */
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -28,6 +29,7 @@
             color: var(--text-primary);
             display: flex;
             height: 100vh;
+            width: 100vw;
             overflow: hidden;
             background-image: url('https://bg.ibelick.com/bg.jpg');
             background-size: cover;
@@ -47,7 +49,8 @@
             display: flex;
             flex-direction: column;
             flex-shrink: 0;
-            transition: all 0.3s ease;
+            transition: transform 0.3s ease-in-out;
+            z-index: 2000;
         }
         .sidebar h1 {
             font-size: 1.8rem;
@@ -99,6 +102,15 @@
             background: rgba(0,0,0,0.3);
             border: 1px solid var(--border-color);
             border-radius: 6px;
+            transition: color 0.3s, border-color 0.3s;
+        }
+        #api-status-display.status-error {
+            color: var(--error-color);
+            border-color: var(--error-color);
+        }
+        #api-status-display.status-ok {
+            color: var(--success-color);
+            border-color: var(--success-color);
         }
         .sidebar .footer .nav-button {
             background: rgba(0,0,0,0.2);
@@ -108,7 +120,6 @@
             border-color: var(--primary-blue);
             background: rgba(0, 170, 255, 0.1);
         }
-        /* THÊM MỚI: Kiểu dáng cho thông tin liên hệ */
         .contact-info {
             margin: 15px 0;
             font-size: 0.75rem;
@@ -122,7 +133,8 @@
 
         /* --- Khu vực nội dung chính --- */
         .main-content {
-            flex-grow: 1;
+            flex: 1;
+            min-width: 0;
             padding: 40px;
             overflow-y: auto;
             background: var(--main-bg);
@@ -152,7 +164,12 @@
             color: var(--text-primary);
             margin-bottom: 15px;
         }
-        .page p { color: var(--text-secondary); margin-bottom: 30px; font-size: 1.1rem; max-width: 800px; }
+        /* SỬA LỖI: Bỏ max-width để đoạn mô tả không bị xuống dòng vô duyên */
+        .page p { 
+            color: var(--text-secondary); 
+            margin-bottom: 30px; 
+            font-size: 1.1rem; 
+        }
         
         /* --- Các thành phần chung --- */
         .input-group { margin-bottom: 20px; }
@@ -325,11 +342,63 @@
         #prompt-gen-file-input {
             display: none;
         }
+
+        /* THÊM MỚI: Nút Hamburger Menu & Overlay */
+        #menu-toggle {
+            display: none; /* Ẩn trên màn hình lớn */
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 3000;
+            background: var(--sidebar-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 24px;
+        }
+        #overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1500;
+        }
+
+        /* THÊM MỚI: CSS cho màn hình nhỏ (Responsive) */
+        @media (max-width: 900px) {
+            .sidebar {
+                position: fixed;
+                height: 100%;
+                transform: translateX(-100%);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            #menu-toggle {
+                display: block;
+            }
+            #overlay.active {
+                display: block;
+            }
+            .main-content {
+                padding: 20px;
+                padding-top: 80px; /* Tạo không gian cho nút menu */
+            }
+            .page h2 {
+                font-size: 2rem;
+            }
+        }
     </style>
 </head>
 <body>
 
-    <nav class="sidebar">
+    <nav class="sidebar" id="sidebar">
         <div>
             <h1>AIO - D2VN</h1>
             <button class="nav-button active" data-page="page-content">Viết Nội Dung</button>
@@ -340,7 +409,6 @@
         <div class="footer">
             <div id="api-status-display">Trạng thái API: Sẵn sàng</div>
             <button id="settings-btn" class="nav-button">Cài đặt</button>
-            <!-- THÊM MỚI: Khối thông tin liên hệ -->
             <div class="contact-info">
                 <p>Contact: 0397 234 636</p>
                 <p>Zalo: Hoàng Vũ Designer</p>
@@ -350,8 +418,11 @@
             <p>&copy; 2025 - Dawn Designer VN</p>
         </div>
     </nav>
+    
+    <div id="overlay"></div>
 
     <main class="main-content">
+        <button id="menu-toggle">☰</button>
         <!-- Các trang chức năng -->
         <div id="page-content" class="page active">
             <h2 class="animated-item">Viết Nội Dung</h2>
@@ -515,6 +586,7 @@
             if (newKey) {
                 localStorage.setItem('geminiApiKey', newKey);
                 alert('Đã lưu API Key!');
+                updateApiStatus(null); 
             } else {
                 alert('Vui lòng nhập một API Key hợp lệ.');
             }
@@ -532,17 +604,30 @@
         });
 
         function updateApiStatus(headers) {
-            if (!headers) {
-                apiStatusDisplay.textContent = "Trạng thái API: Sẵn sàng";
+            const key = getApiKey();
+            apiStatusDisplay.classList.remove('status-error', 'status-ok');
+
+            if (!key) {
+                apiStatusDisplay.textContent = "Chưa nhập API";
+                apiStatusDisplay.classList.add('status-error');
                 return;
             }
+
+            if (!headers) {
+                apiStatusDisplay.textContent = "Sẵn Sàng";
+                apiStatusDisplay.classList.add('status-ok');
+                return;
+            }
+            
             const remaining = headers.get('x-goog-ratelimit-remaining-count');
             const limit = headers.get('x-goog-ratelimit-limit-count');
 
             if (remaining !== null && limit !== null) {
                 apiStatusDisplay.textContent = `Lượt miễn phí/phút: ${remaining}/${limit}`;
+                apiStatusDisplay.classList.add('status-ok');
             } else {
-                 apiStatusDisplay.textContent = "Trạng thái API: Không rõ";
+                 apiStatusDisplay.textContent = "Sẵn Sàng";
+                 apiStatusDisplay.classList.add('status-ok');
             }
         }
 
@@ -744,833 +829,18 @@
             }
         });
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const colorSwatchesContainer = document.getElementById('color-swatches-container');
-            Object.keys(themes.colors).forEach(key => {
-                const swatch = document.createElement('div');
-                swatch.className = 'color-swatch';
-                swatch.dataset.color = key;
-                swatch.style.background = `linear-gradient(90deg, ${themes.colors[key].primary}, ${themes.colors[key].secondary})`;
-                swatch.title = themes.colors[key].name;
-                swatch.addEventListener('click', () => saveAndApplyTheme('color', key));
-                colorSwatchesContainer.appendChild(swatch);
-            });
+        // --- LOGIC RESPONSIVE MENU ---
+        const menuToggle = document.getElementById('menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
 
-            const bgThumbnailsContainer = document.getElementById('bg-thumbnails-container');
-            Object.keys(themes.backgrounds).forEach(key => {
-                const thumb = document.createElement('div');
-                thumb.className = 'bg-thumbnail';
-                thumb.dataset.bg = key;
-                thumb.style.backgroundImage = `url('${themes.backgrounds[key]}')`;
-                thumb.addEventListener('click', () => saveAndApplyTheme('bg', key));
-                bgThumbnailsContainer.appendChild(thumb);
-            });
-            
-            document.getElementById('custom-bg-url').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    if(this.value.trim().startsWith('http')) {
-                        saveAndApplyTheme('bg', this.value.trim());
-                    } else {
-                        alert('Link ảnh không hợp lệ.');
-                    }
-                }
-            });
-
-            applyTheme(getThemeSettings());
-
-            const navButtons = document.querySelectorAll('.sidebar .nav-button');
-            const pages = document.querySelectorAll('.main-content .page');
-
-            navButtons.forEach(button => {
-                if (button.id === 'settings-btn') return;
-                button.addEventListener('click', () => {
-                    navButtons.forEach(btn => btn.classList.remove('active'));
-                    button.classList.add('active');
-                    const targetPageId = button.getAttribute('data-page');
-                    
-                    pages.forEach(page => {
-                        page.classList.remove('active', 'animate-in');
-                    });
-
-                    const targetPage = document.getElementById(targetPageId);
-                    if (targetPage) {
-                        targetPage.classList.add('active');
-                        setTimeout(() => {
-                            targetPage.classList.add('animate-in');
-                            const itemsToAnimate = targetPage.querySelectorAll('.animated-item');
-                            itemsToAnimate.forEach((item, index) => {
-                                item.style.transitionDelay = `${index * 80}ms`;
-                            });
-                        }, 10);
-                    }
-                });
-            });
-
-            const initialPage = document.querySelector('.page.active');
-            if (initialPage) {
-                 setTimeout(() => {
-                    initialPage.classList.add('animate-in');
-                    const itemsToAnimate = initialPage.querySelectorAll('.animated-item');
-                    itemsToAnimate.forEach((item, index) => {
-                        item.style.transitionDelay = `${index * 80}ms`;
-                    });
-                }, 10);
-            }
-
-            if (!getApiKey()) {
-                setTimeout(() => {
-                    settingsModal.style.display = 'flex';
-                }, 1000);
-            }
-            updateApiStatus(null); 
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
         });
-    </script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AIO D2VN - Bộ Công Cụ AI Toàn Diện</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary-blue: #00aaff;
-            --primary-purple: #9076ff;
-            --text-primary: #f0f6fc;
-            --text-secondary: #b1bac4;
-            --border-color: rgba(255, 255, 255, 0.1);
-            --sidebar-bg: rgba(22, 27, 34, 0.7); /* Nền sidebar */
-            --main-bg: rgba(13, 17, 23, 0.75); /* Nền khu vực chính, tối hơn để chữ nổi bật */
-            --input-bg: rgba(0, 0, 0, 0.25); /* Nền cho các ô input, tăng độ trong */
-            --success-color: #238636;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            line-height: 1.6;
-            color: var(--text-primary);
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-            background-image: url('https://bg.ibelick.com/bg.jpg');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            transition: background-image 0.5s ease-in-out;
-        }
-
-        /* --- Thanh điều hướng bên cạnh (Sidebar) --- */
-        .sidebar {
-            width: 250px;
-            background: var(--sidebar-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-right: 1px solid var(--border-color);
-            padding: 25px;
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-            transition: all 0.3s ease;
-        }
-        .sidebar h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            background: linear-gradient(90deg, var(--primary-blue), var(--primary-purple));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 35px;
-            text-align: center;
-            transition: background 0.3s ease;
-        }
-        .sidebar .nav-button {
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            padding: 13px 20px;
-            width: 100%;
-            text-align: left;
-            font-size: 1rem;
-            font-weight: 500;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-bottom: 8px;
-            transition: all 0.2s ease;
-            position: relative;
-        }
-        .sidebar .nav-button:hover {
-            background-color: rgba(255, 255, 255, 0.05);
-            color: var(--text-primary);
-        }
-        .sidebar .nav-button.active {
-            background: linear-gradient(90deg, var(--primary-blue), var(--primary-purple));
-            color: #fff;
-            font-weight: 600;
-            box-shadow: 0 4px 15px rgba(0, 170, 255, 0.2);
-        }
-        .sidebar .footer {
-            margin-top: auto;
-            border-top: 1px solid var(--border-color);
-            padding-top: 15px;
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            text-align: center;
-        }
-        #api-status-display {
-            font-size: 0.85rem;
-            padding: 8px;
-            margin-bottom: 10px;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-        }
-        .sidebar .footer .nav-button {
-            background: rgba(0,0,0,0.2);
-            border: 1px solid var(--border-color);
-        }
-        .sidebar .footer .nav-button:hover {
-            border-color: var(--primary-blue);
-            background: rgba(0, 170, 255, 0.1);
-        }
-        /* THÊM MỚI: Kiểu dáng cho thông tin liên hệ */
-        .contact-info {
-            margin: 15px 0;
-            font-size: 0.75rem;
-            line-height: 1.5;
-            opacity: 0.8;
-        }
-        .contact-info p {
-            margin: 2px 0;
-        }
-
-
-        /* --- Khu vực nội dung chính --- */
-        .main-content {
-            flex-grow: 1;
-            padding: 40px;
-            overflow-y: auto;
-            background: var(--main-bg);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-        }
-        .page { 
-            display: none; 
-        }
-        .page.active { 
-            display: block; 
-        }
-
-        .animated-item {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-        }
-        .page.animate-in .animated-item {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .page h2 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 15px;
-        }
-        .page p { color: var(--text-secondary); margin-bottom: 30px; font-size: 1.1rem; max-width: 800px; }
-        
-        /* --- Các thành phần chung --- */
-        .input-group { margin-bottom: 20px; }
-        .input-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 1.05rem; }
-        .prompt-area, .text-input {
-            width: 100%;
-            background: var(--input-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 15px;
-            color: var(--text-primary);
-            font-family: inherit;
-            font-size: 1rem;
-            transition: border-color 0.2s, box-shadow 0.2s;
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-        }
-        .prompt-area:focus, .text-input:focus {
-            outline: none;
-            border-color: var(--primary-blue);
-            box-shadow: 0 0 0 3px rgba(0, 170, 255, 0.2);
-        }
-        .prompt-area { resize: vertical; min-height: 120px; }
-        .action-button {
-            background: linear-gradient(90deg, var(--primary-blue), var(--primary-purple));
-            color: white;
-            padding: 14px 30px;
-            border-radius: 8px;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            font-size: 1.05rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 170, 255, 0.2);
-        }
-        .action-button:hover { 
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 170, 255, 0.3);
-        }
-        .action-button:disabled { 
-            background: var(--border-color);
-            box-shadow: none;
-            transform: none;
-            cursor: not-allowed;
-        }
-        .result-box {
-            background: var(--input-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 20px;
-            margin-top: 25px;
-            white-space: pre-wrap;
-            font-size: 1rem;
-            color: var(--text-primary);
-            min-height: 150px;
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-        }
-        .image-preview {
-            max-width: 100%;
-            max-height: 300px;
-            border-radius: 8px;
-            margin-top: 15px;
-            display: block;
-        }
-
-        /* --- Cửa sổ Cài đặt (Modal) --- */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.6);
-            justify-content: center;
-            align-items: center;
-            animation: fadeIn 0.3s;
-        }
-        .modal-content {
-            background: var(--sidebar-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            padding: 10px 30px 30px 30px;
-            border: 1px solid var(--border-color);
-            width: 90%;
-            max-width: 600px;
-            border-radius: 16px;
-            position: relative;
-        }
-        .close-button {
-            color: var(--text-secondary);
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .modal-tabs {
-            display: flex;
-            border-bottom: 1px solid var(--border-color);
-            margin-bottom: 20px;
-        }
-        .modal-tab-button {
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            padding: 10px 15px;
-            cursor: pointer;
-            font-size: 1rem;
-            border-bottom: 3px solid transparent;
-        }
-        .modal-tab-button.active {
-            color: var(--primary-blue);
-            border-bottom-color: var(--primary-blue);
-        }
-        .modal-tab-content { display: none; }
-        .modal-tab-content.active { display: block; }
-        .theme-options { margin-top: 15px; }
-        .color-swatches, .bg-thumbnails {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .color-swatch, .bg-thumbnail {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 2px solid var(--border-color);
-            transition: transform 0.2s, border-color 0.2s;
-        }
-        .bg-thumbnail {
-            border-radius: 8px;
-            background-size: cover;
-            background-position: center;
-        }
-        .color-swatch:hover, .bg-thumbnail:hover {
-            transform: scale(1.1);
-        }
-        .color-swatch.active, .bg-thumbnail.active {
-            border-color: var(--primary-blue);
-        }
-
-        /* --- Kiểu dáng cho khu vực kéo thả ảnh --- */
-        .drop-zone {
-            border: 2px dashed var(--border-color);
-            border-radius: 12px;
-            padding: 40px;
-            text-align: center;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: border-color 0.2s, background-color 0.2s;
-            background: var(--input-bg);
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-        }
-        .drop-zone.dragover {
-            border-color: var(--primary-blue);
-            background-color: rgba(0, 170, 255, 0.1);
-        }
-        .drop-zone img {
-            max-width: 100%;
-            max-height: 250px;
-            border-radius: 8px;
-            margin-top: 15px;
-        }
-        #prompt-gen-file-input {
-            display: none;
-        }
-    </style>
-</head>
-<body>
-
-    <nav class="sidebar">
-        <div>
-            <h1>AIO - D2VN</h1>
-            <button class="nav-button active" data-page="page-content">Viết Nội Dung</button>
-            <button class="nav-button" data-page="page-image-analysis">Phân Tích Ảnh</button>
-            <button class="nav-button" data-page="page-prompt-gen">Tạo Prompt Ảnh</button>
-            <button class="nav-button" data-page="page-image-gen">Tạo Hình Ảnh</button>
-        </div>
-        <div class="footer">
-            <div id="api-status-display">Trạng thái API: Sẵn sàng</div>
-            <button id="settings-btn" class="nav-button">Cài đặt</button>
-            <!-- THÊM MỚI: Khối thông tin liên hệ -->
-            <div class="contact-info">
-                <p>Contact: 0397 234 636</p>
-                <p>Zalo: Hoàng Vũ Designer</p>
-                <p>Facebook: Hoàng Vũ (Dawn)</p>
-                <p>Email: dawntn.design@gmail.com</p>
-            </div>
-            <p>&copy; 2025 - Dawn Designer VN</p>
-        </div>
-    </nav>
-
-    <main class="main-content">
-        <!-- Các trang chức năng -->
-        <div id="page-content" class="page active">
-            <h2 class="animated-item">Viết Nội Dung</h2>
-            <p class="animated-item">Trợ lý ảo giúp bạn soạn thảo email, viết bài blog, sáng tạo kịch bản và mọi loại nội dung văn bản khác.</p>
-            <div class="input-group animated-item">
-                <label for="text-prompt">Yêu cầu của bạn</label>
-                <textarea id="text-prompt" class="prompt-area" placeholder="Viết một email chuyên nghiệp để xin nghỉ phép..."></textarea>
-            </div>
-            <button id="generate-text-btn" class="action-button animated-item">Tạo Nội Dung</button>
-            <div id="text-result" class="result-box animated-item">Kết quả sẽ hiện ở đây...</div>
-        </div>
-
-        <div id="page-image-analysis" class="page">
-            <h2 class="animated-item">Phân Tích Ảnh</h2>
-            <p class="animated-item">Tải lên một hình ảnh và yêu cầu AI phân tích, mô tả, hoặc trích xuất văn bản từ đó.</p>
-            <div class="input-group animated-item">
-                <label for="image-upload">Chọn ảnh</label>
-                <input type="file" id="image-upload" accept="image/*" class="text-input">
-            </div>
-            <img id="image-preview-analysis" class="image-preview animated-item" src="" alt="Xem trước ảnh">
-            <div class="input-group animated-item" style="margin-top: 15px;">
-                <label for="image-prompt">Yêu cầu phân tích</label>
-                <textarea id="image-prompt" class="prompt-area" placeholder="Mô tả chi tiết hình ảnh này. Hoặc: Trích xuất toàn bộ văn bản trong ảnh."></textarea>
-            </div>
-            <button id="analyze-image-btn" class="action-button animated-item">Phân Tích</button>
-            <div id="image-result" class="result-box animated-item">Kết quả phân tích sẽ hiện ở đây...</div>
-        </div>
-        
-        <div id="page-prompt-gen" class="page">
-            <h2 class="animated-item">Tạo Prompt Từ Ảnh</h2>
-            <p class="animated-item">Tải lên một bức ảnh, AI sẽ phân tích và tạo ra một đoạn mô tả (prompt) chi tiết bằng tiếng Anh, giúp bạn sử dụng trong các công cụ tạo ảnh khác như Midjourney.</p>
-            <div id="prompt-gen-drop-zone" class="drop-zone animated-item">
-                <span id="prompt-gen-drop-text">Kéo và thả ảnh vào đây, hoặc nhấn để chọn ảnh. Bạn cũng có thể dán ảnh trực tiếp (Ctrl+V).</span>
-                <img id="prompt-gen-preview" src="" alt="Xem trước ảnh">
-            </div>
-            <input type="file" id="prompt-gen-file-input" accept="image/*">
-            <div class="animated-item" style="margin-top: 20px; text-align: center;">
-                 <button id="generate-prompt-btn" class="action-button" disabled>Tạo Prompt</button>
-            </div>
-            <div id="prompt-gen-result" class="result-box animated-item">Prompt sẽ được tạo ở đây...</div>
-        </div>
-
-        <div id="page-image-gen" class="page">
-            <h2 class="animated-item">Tạo Hình Ảnh</h2>
-            <p class="animated-item">Mô tả ý tưởng của bạn, AI sẽ biến nó thành hình ảnh. (Chức năng này sử dụng mô hình tạo ảnh miễn phí).</p>
-            <div class="input-group animated-item">
-                <label for="image-gen-prompt">Mô tả hình ảnh bạn muốn tạo</label>
-                <textarea id="image-gen-prompt" class="prompt-area" placeholder="Một chú mèo phi hành gia đang cưỡi tên lửa bay vào vũ trụ, phong cách hoạt hình..."></textarea>
-            </div>
-            <button id="generate-image-btn" class="action-button animated-item">Tạo Ảnh</button>
-            <div class="result-box animated-item" style="text-align: center;">
-                <img id="generated-image" class="image-preview" src="" alt="Ảnh do AI tạo ra sẽ hiện ở đây">
-                <p id="image-gen-status">Chưa có ảnh nào được tạo.</p>
-            </div>
-        </div>
-    </main>
-
-    <!-- Cửa sổ Cài đặt (Modal) -->
-    <div id="settings-modal" class="modal">
-        <div class="modal-content">
-            <span id="close-modal-btn" class="close-button">&times;</span>
-            <div class="modal-tabs">
-                <button class="modal-tab-button active" data-tab="tab-api">API Key</button>
-                <button class="modal-tab-button" data-tab="tab-theme">Giao Diện</button>
-            </div>
-
-            <!-- Tab API Key -->
-            <div id="tab-api" class="modal-tab-content active">
-                <h2>Cài đặt API Key</h2>
-                <p>Nhập API Key của Google AI Studio (Gemini) của bạn vào đây. Key sẽ được lưu trên trình duyệt của bạn.</p>
-                <div class="input-group">
-                    <label for="api-key-input">Google AI (Gemini) API Key</label>
-                    <input type="password" id="api-key-input" class="text-input" placeholder="Dán API Key của bạn vào đây">
-                </div>
-                <button id="save-api-key-btn" class="action-button">Lưu Key</button>
-            </div>
-
-            <!-- Tab Giao Diện -->
-            <div id="tab-theme" class="modal-tab-content">
-                <h2>Tùy Chỉnh Giao Diện</h2>
-                <div class="theme-options">
-                    <div class="input-group">
-                        <label>Màu nhấn</label>
-                        <div id="color-swatches-container" class="color-swatches"></div>
-                    </div>
-                    <div class="input-group">
-                        <label>Hình nền</label>
-                        <div id="bg-thumbnails-container" class="bg-thumbnails"></div>
-                        <input type="text" id="custom-bg-url" class="text-input" placeholder="Hoặc dán link ảnh vào đây và nhấn Enter" style="margin-top: 10px;">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <script>
-        // --- PHẦN LOGIC JAVASCRIPT ---
-
-        // --- Logic Cài đặt & Giao diện ---
-        const settingsModal = document.getElementById('settings-modal');
-        const settingsBtn = document.getElementById('settings-btn');
-        const closeModalBtn = document.getElementById('close-modal-btn');
-        const saveApiKeyBtn = document.getElementById('save-api-key-btn');
-        const apiKeyInput = document.getElementById('api-key-input');
-        const apiStatusDisplay = document.getElementById('api-status-display');
-        const root = document.documentElement;
-
-        // Dữ liệu theme
-        const themes = {
-            colors: {
-                default: { name: 'Mặc định', primary: '#00aaff', secondary: '#9076ff' },
-                emerald: { name: 'Ngọc lục bảo', primary: '#10b981', secondary: '#6ee7b7' },
-                sunset: { name: 'Hoàng hôn', primary: '#f97316', secondary: '#ef4444' },
-                violet: { name: 'Tím', primary: '#8b5cf6', secondary: '#c084fc' }
-            },
-            backgrounds: {
-                default: 'https://bg.ibelick.com/bg.jpg',
-                abstract: 'https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17?q=80&w=2256&auto=format&fit=crop',
-                space: 'https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=2549&auto=format&fit=crop',
-                forest: 'https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=2070&auto=format&fit=crop',
-                earth: 'https://r4.wallpaperflare.com/wallpaper/12/1008/45/earth-4k-best-desktop-download-wallpaper-b876cd2860b07c48b03ca18e6852943a.jpg',
-            }
-        };
-
-        function getApiKey() { return localStorage.getItem('geminiApiKey'); }
-        function getThemeSettings() {
-            const settings = localStorage.getItem('aioTheme');
-            return settings ? JSON.parse(settings) : { color: 'default', bg: 'default' };
-        }
-
-        function applyTheme(settings) {
-            const colorTheme = themes.colors[settings.color];
-            const bgUrl = settings.bg.startsWith('http') ? settings.bg : themes.backgrounds[settings.bg];
-            
-            root.style.setProperty('--primary-blue', colorTheme.primary);
-            root.style.setProperty('--primary-purple', colorTheme.secondary);
-            document.body.style.backgroundImage = `url('${bgUrl}')`;
-
-            document.querySelectorAll('.color-swatch').forEach(sw => sw.classList.toggle('active', sw.dataset.color === settings.color));
-            document.querySelectorAll('.bg-thumbnail').forEach(thumb => thumb.classList.toggle('active', thumb.dataset.bg === settings.bg));
-        }
-
-        function saveAndApplyTheme(type, value) {
-            const currentSettings = getThemeSettings();
-            currentSettings[type] = value;
-            localStorage.setItem('aioTheme', JSON.stringify(currentSettings));
-            applyTheme(currentSettings);
-        }
-
-        settingsBtn.addEventListener('click', () => {
-            settingsModal.style.display = 'flex';
-            apiKeyInput.value = getApiKey() || '';
-        });
-        closeModalBtn.addEventListener('click', () => settingsModal.style.display = 'none');
-        window.addEventListener('click', (event) => {
-            if (event.target == settingsModal) settingsModal.style.display = 'none';
-        });
-
-        saveApiKeyBtn.addEventListener('click', () => {
-            const newKey = apiKeyInput.value.trim();
-            if (newKey) {
-                localStorage.setItem('geminiApiKey', newKey);
-                alert('Đã lưu API Key!');
-            } else {
-                alert('Vui lòng nhập một API Key hợp lệ.');
-            }
-        });
-        
-        const modalTabs = document.querySelectorAll('.modal-tab-button');
-        const modalTabContents = document.querySelectorAll('.modal-tab-content');
-        modalTabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                modalTabs.forEach(t => t.classList.remove('active'));
-                modalTabContents.forEach(c => c.classList.remove('active'));
-                tab.classList.add('active');
-                document.getElementById(tab.dataset.tab).classList.add('active');
-            });
-        });
-
-        function updateApiStatus(headers) {
-            if (!headers) {
-                apiStatusDisplay.textContent = "Trạng thái API: Sẵn sàng";
-                return;
-            }
-            const remaining = headers.get('x-goog-ratelimit-remaining-count');
-            const limit = headers.get('x-goog-ratelimit-limit-count');
-
-            if (remaining !== null && limit !== null) {
-                apiStatusDisplay.textContent = `Lượt miễn phí/phút: ${remaining}/${limit}`;
-            } else {
-                 apiStatusDisplay.textContent = "Trạng thái API: Không rõ";
-            }
-        }
-
-        function checkApiKey() {
-            const key = getApiKey();
-            if (!key) {
-                settingsModal.style.display = 'flex';
-                return null;
-            }
-            return key;
-        }
-
-        async function makeApiCall(apiUrl, payload, resultElement, buttonElement) {
-            const API_KEY = checkApiKey();
-            if (!API_KEY) return;
-
-            buttonElement.disabled = true;
-            resultElement.textContent = 'AI đang xử lý...';
-
-            try {
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                updateApiStatus(response.headers);
-                const data = await response.json();
-                
-                if (data.error) { throw new Error(data.error.message); }
-                if (data.candidates && data.candidates[0]) { return data; } 
-                else { throw new Error('Phản hồi từ API không hợp lệ.'); }
-            } catch (error) {
-                console.error("Lỗi:", error);
-                resultElement.textContent = `Đã xảy ra lỗi: ${error.message}`;
-                return null; 
-            } finally {
-                buttonElement.disabled = false;
-            }
-        }
-
-        // --- LOGIC TRANG 1: VIẾT NỘI DUNG ---
-        const generateTextBtn = document.getElementById('generate-text-btn');
-        const textPromptInput = document.getElementById('text-prompt');
-        const textResultBox = document.getElementById('text-result');
-
-        generateTextBtn.addEventListener('click', async () => {
-            const prompt = textPromptInput.value;
-            if (!prompt) {
-                textResultBox.textContent = 'Vui lòng nhập yêu cầu của bạn.';
-                return;
-            }
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${getApiKey()}`;
-            const payload = { contents: [{ parts: [{ text: prompt }] }] };
-            const data = await makeApiCall(apiUrl, payload, textResultBox, generateTextBtn);
-            if(data) {
-                textResultBox.textContent = data.candidates[0].content.parts[0].text;
-            }
-        });
-
-        // --- LOGIC TRANG 2: PHÂN TÍCH ẢNH ---
-        const imageUpload = document.getElementById('image-upload');
-        const imagePreview = document.getElementById('image-preview-analysis');
-        const imagePromptInput = document.getElementById('image-prompt');
-        const analyzeImageBtn = document.getElementById('analyze-image-btn');
-        const imageResultBox = document.getElementById('image-result');
-        let base64ImageData = null;
-
-        imageUpload.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                imagePreview.src = reader.result;
-                base64ImageData = reader.result.split(',')[1];
-            };
-            reader.readAsDataURL(file);
-        });
-
-        analyzeImageBtn.addEventListener('click', async () => {
-            const prompt = imagePromptInput.value;
-            if (!base64ImageData) {
-                imageResultBox.textContent = 'Vui lòng tải lên một hình ảnh.';
-                return;
-            }
-            if (!prompt) {
-                imageResultBox.textContent = 'Vui lòng nhập yêu cầu phân tích.';
-                return;
-            }
-            
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${getApiKey()}`;
-            const payload = {
-                contents: [{
-                    parts: [
-                        { text: prompt },
-                        { inline_data: { mime_type: "image/jpeg", data: base64ImageData } }
-                    ]
-                }]
-            };
-            const data = await makeApiCall(apiUrl, payload, imageResultBox, analyzeImageBtn);
-            if(data) {
-                 imageResultBox.textContent = data.candidates[0].content.parts[0].text;
-            }
-        });
-
-        // --- LOGIC TRANG 3: TẠO PROMPT ẢNH ---
-        const dropZone = document.getElementById('prompt-gen-drop-zone');
-        const fileInput = document.getElementById('prompt-gen-file-input');
-        const previewImg = document.getElementById('prompt-gen-preview');
-        const dropText = document.getElementById('prompt-gen-drop-text');
-        const generatePromptBtn = document.getElementById('generate-prompt-btn');
-        const promptResultBox = document.getElementById('prompt-gen-result');
-        let promptGenBase64 = null;
-
-        function handleImageFile(file) {
-            if (!file || !file.type.startsWith('image/')) {
-                alert('Vui lòng chỉ chọn file ảnh.');
-                return;
-            }
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                previewImg.src = reader.result;
-                previewImg.style.display = 'block';
-                dropText.style.display = 'none';
-                promptGenBase64 = reader.result.split(',')[1];
-                generatePromptBtn.disabled = false;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        dropZone.addEventListener('click', () => fileInput.click());
-        fileInput.addEventListener('change', (e) => handleImageFile(e.target.files[0]));
-
-        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
-        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('dragover');
-            handleImageFile(e.dataTransfer.files[0]);
-        });
-
-        window.addEventListener('paste', (e) => {
-            if (!document.getElementById('page-prompt-gen').classList.contains('active')) return;
-            const items = e.clipboardData.items;
-            for (let i = 0; i < items.length; i++) {
-                if (items[i].type.indexOf('image') !== -1) {
-                    handleImageFile(items[i].getAsFile());
-                    break; 
-                }
-            }
-        });
-
-        generatePromptBtn.addEventListener('click', async () => {
-            if (!promptGenBase64) {
-                promptResultBox.textContent = 'Vui lòng cung cấp một hình ảnh.';
-                return;
-            }
-            const prompt = "Analyze this image and generate a detailed, descriptive prompt in English for an AI image generator like Midjourney or Stable Diffusion. Focus on the subject, setting, style, colors, lighting, and overall mood. The prompt should be a single, coherent paragraph.";
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${getApiKey()}`;
-            const payload = {
-                contents: [{
-                    parts: [ { text: prompt }, { inline_data: { mime_type: "image/jpeg", data: promptGenBase64 } } ]
-                }]
-            };
-            const data = await makeApiCall(apiUrl, payload, promptResultBox, generatePromptBtn);
-            if(data) {
-                promptResultBox.textContent = data.candidates[0].content.parts[0].text;
-            }
-        });
-        
-        // --- LOGIC TRANG 4: TẠO HÌNH ẢNH ---
-        const generateImageBtn = document.getElementById('generate-image-btn');
-        const imageGenPromptInput = document.getElementById('image-gen-prompt');
-        const generatedImage = document.getElementById('generated-image');
-        const imageGenStatus = document.getElementById('image-gen-status');
-
-        generateImageBtn.addEventListener('click', async () => {
-            const prompt = imageGenPromptInput.value;
-            if (!prompt) {
-                imageGenStatus.textContent = 'Vui lòng nhập mô tả cho ảnh.';
-                return;
-            }
-            generatedImage.src = "";
-            imageGenStatus.textContent = 'AI đang vẽ...';
-            
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=${getApiKey()}`;
-            const payload = {
-                contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: { responseModalities: ['IMAGE', 'TEXT'] },
-            };
-            const data = await makeApiCall(apiUrl, payload, imageGenStatus, generateImageBtn);
-            if(data) {
-                const part = data.candidates[0].content.parts.find(p => p.inlineData);
-                if (part && part.inlineData && part.inlineData.data) {
-                    generatedImage.src = `data:image/png;base64,${part.inlineData.data}`;
-                    imageGenStatus.textContent = 'Tạo ảnh thành công!';
-                } else {
-                    imageGenStatus.textContent = 'Lỗi: Không tìm thấy dữ liệu ảnh trong phản hồi.';
-                }
-            }
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
         });
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -1631,6 +901,10 @@
                                 item.style.transitionDelay = `${index * 80}ms`;
                             });
                         }, 10);
+                    }
+                    if (window.innerWidth <= 900) {
+                        sidebar.classList.remove('open');
+                        overlay.classList.remove('active');
                     }
                 });
             });
